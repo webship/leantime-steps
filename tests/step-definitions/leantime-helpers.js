@@ -141,20 +141,28 @@ function siteUrl(world, url) {
 }
 
 /**
- * Close a page's tour when one shows: the site shows each person a tour of a screen once ("I'll explore on my own" /
- * "Take a tour"). It is closed by its own button, with "Don't show this again", and the run says so, so a step reads
- * the screen under it. Nothing happens when none shows.
+ * Whether a window of help shows: the site shows a person the one of a screen once a session ("I'll explore on my
+ * own" / "Take the tour").
+ *
+ * @param {object} world
+ * @returns {Promise<boolean>}
+ */
+async function tourShown(world) {
+  return world.page.getByRole('link', { name: "I'll explore on my own" }).first().isVisible().catch(() => false);
+}
+
+/**
+ * Close a screen's window of help when one shows, by its own button ("I'll explore on my own"), and say so in the
+ * run, so a step reads the screen under it. "Don't show this again" is left as it is: that is the person's own
+ * setting, which a run does not change. Nothing happens when none shows.
  *
  * @param {object} world
  */
 async function closeTour(world) {
   const page = world.page;
-  const away = page.getByRole('link', { name: "I'll explore on my own" });
-  const shown = await away.first().isVisible().catch(() => false);
-  if (!shown) return;
-  const again = page.getByRole('checkbox', { name: "Don't show this again" });
-  if (await again.first().isVisible().catch(() => false)) await again.first().check().catch(() => {});
-  await away.first().click().catch(() => {});
+  if (!(await tourShown(world))) return;
+  await page.getByRole('link', { name: "I'll explore on my own" }).first().click().catch(() => {});
+  await page.getByRole('link', { name: "I'll explore on my own" }).first().waitFor({ state: 'hidden', timeout: budget(world) }).catch(() => {});
   console.log(`[leantime-steps] a tour of ${page.url().replace(siteRoot(world), '') || '/'} showed and was closed with "I'll explore on my own".`);
 }
 
@@ -538,21 +546,39 @@ function taskWindow(world, id) {
 }
 
 /**
- * Open a task in its window, on the project's board: the task's own address. Waits until its window is there.
+ * Open a task in its window, on the project's board, by the task's own address: Leantime opens the window from the
+ * address's hash (#/tickets/showTicket/<number>), as its own links do. The board goes first, and its window of help
+ * is closed when it shows: the site keeps one window at a time, and a window of help that comes over the task's takes
+ * the task's with it when it closes. Then the task is asked for, and asked again when such a window came over it.
+ * Waits until its window is there.
  *
  * @param {object} world
  * @param {{id: string, project: {id: string}}} task
  */
 async function openTask(world, task) {
   await open(world, `/projects/changeCurrentProject/${task.project.id}`);
-  await open(world, `/tickets/showKanban#/tickets/showTicket/${task.id}`);
+  await open(world, '/tickets/showKanban');
   world.leantime = world.leantime || {};
   world.leantime.task = task.id;
   world.leantime.project = task.project.name;
+  const win = taskWindow(world, task.id);
+  const ask = (n) => world.page.evaluate((id) => {
+    if (window.location.hash) window.location.hash = '';
+    window.location.hash = `#/tickets/showTicket/${id}`;
+  }, String(n));
   await actOrExplain('open the task', `#${task.id}`, async () => {
-    await taskWindow(world, task.id).waitFor({ state: 'visible', timeout: budget(world) });
+    for (let attempt = 1; ; attempt += 1) {
+      await ask(task.id);
+      const shown = await win.waitFor({ state: 'visible', timeout: attempt < 3 ? 10000 : budget(world) }).then(() => true).catch(() => false);
+      if (shown && !(await tourShown(world))) return;
+      if (attempt >= 3) {
+        if (shown) return;
+        throw new Error(`its window did not show, asked for three times at #/tickets/showTicket/${task.id}`);
+      }
+      await closeTour(world);
+      if (await win.isVisible().catch(() => false)) return;
+    }
   }, 'The task\'s window did not open: the account must be in the project\'s team, and the task must be in the project.');
-  await closeTour(world);
 }
 
 /**
@@ -611,6 +637,7 @@ module.exports = {
   waitForValue,
   siteRoot,
   siteUrl,
+  tourShown,
   closeTour,
   open,
   resolveUser,

@@ -89,7 +89,9 @@ When(/^(I |we )*create a task "([^"]*)"(?: in the project "([^"]*)")?$/, async f
 });
 
 /**
- * Open a task of the project by its title (or its number, as "#1"), in its window.
+ * Open a task of the project by its title (or its number, as "#1"), in its window. A window of help the board shows
+ * once a session is closed first, and the task asked for again when one came over it: the step may take up to two
+ * minutes on a slow site.
  *
  * Example #1: When I open the task "The greeting script says Helo instead of Hello"
  * Example #2: When we open the task "#1"
@@ -97,7 +99,7 @@ When(/^(I |we )*create a task "([^"]*)"(?: in the project "([^"]*)")?$/, async f
  * Example #4: And we open the task "#1"
  * Example #5: When we open the task "The greeting script says Helo instead of Hello"
  */
-When(/^(I |we )*open the task "([^"]*)"$/, async function (_who, title) {
+When(/^(I |we )*open the task "([^"]*)"$/, { timeout: 120 * 1000 }, async function (_who, title) {
   const task = await h.taskNamed(this, title);
   await h.openTask(this, task);
 });

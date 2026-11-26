@@ -199,8 +199,11 @@ own step only.
   `TIDY_ONLY=1 .github/scripts/build-ddev-site.sh`, which CI runs last) removes what the test accounts left there.
 - A refusal (a wrong password, a project or a task an account may not see) makes the browser log the refused requests:
   give those scenarios `@js-off`.
-- Leantime shows each person a tour of a screen once ("I'll explore on my own"). The steps close one when it shows, by
-  its own button, and the run says so (`[leantime-steps] a tour of … showed and was closed`).
+- Leantime shows a person the window of help of a screen once a session ("I'll explore on my own"). The steps close
+  one when it shows, by its own button, and the run says so (`[leantime-steps] a tour of … showed and was closed`).
+  "Don't show this again" is the person's own setting: a run leaves it as it is. The site keeps one window at a time,
+  and a window of help that comes over a task's takes the task's with it when it closes: the steps open the board and
+  close its window of help first, then ask for the task, and ask again when one came over it.
 - Leantime allows a set number of API calls a minute for an account (120 by default, `LEAN_RATELIMIT_API`) and of
   logins from one address (20, `LEAN_RATELIMIT_AUTH`). A suite reads and logs in more often than a person, so the test
   site allows 1000 and 100, a setting for a test site only. The pack reads the site once a second while it waits,
