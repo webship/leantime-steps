@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the test site of this pack in a DDEV project: Leantime's own image on the project's own MySQL, installed by
+# Build the test site of this pack in a DDEV project: Leantime's own image on the project's own MariaDB, installed by
 # Leantime's own installer, the accounts of the suite in their roles of the project Webship site, and the sample content
 # the features read (its tasks, the sprint "Sprint 1", comments and logged time). It is what CI runs; on a machine with
 # Docker, DDEV and 1.5 GB of free memory it makes the same site. As the Webship Workspace's builder does for a test
@@ -43,7 +43,8 @@ secret() { head -c 200 /dev/urandom | base64 -w0 | tr -dc 'A-Za-z0-9' | head -c 
 mkdir -p "${SITE_DIR}/leantime" "${SITE_DIR}/.ddev"
 SITE_DIR="$(cd "${SITE_DIR}" && pwd)"
 cd "${SITE_DIR}"
-ddev config --project-type=generic --project-name="${NAME}" --database=mysql:8.4 < /dev/null
+# MariaDB 11.4, as the Webship Workspace builds Leantime (Leantime supports MySQL 8.0+ or MariaDB 10.6+).
+ddev config --project-type=generic --project-name="${NAME}" --database=mariadb:11.4 < /dev/null
 
 cp "${PACK}/site/leantime-site.php" leantime/
 ( umask 077
@@ -73,7 +74,7 @@ ENVEOF
 )
 printf 'LEANTIME_IMAGE=%s\n' "${IMAGE}" > .ddev/.env
 cat > .ddev/docker-compose.leantime.yaml <<'YAMLEOF'
-# Leantime: its own image on the project's MySQL, at the project's address; the project's web container keeps the
+# Leantime: its own image on the project's MariaDB, at the project's address; the project's web container keeps the
 # mail catcher. The same service as the Webship Workspace's Leantime plugin.
 services:
   web:

@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   cucumber:
-    # A real site, built in a DDEV project on the runner: Leantime's own image on the project's own MySQL, installed
+    # A real site, built in a DDEV project on the runner: Leantime's own image on the project's own MariaDB, installed
     # by its own installer, the accounts of the suite and the sample content. The suite runs twice, and after each run
     # the site must hold what it held before; then the assertions that must fail; then what Leantime keeps of the
     # tasks the suite removed goes, through the site's tidy.

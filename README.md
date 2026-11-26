@@ -25,7 +25,7 @@ No step phrase names the platform: a scenario reads `When I set the status of th
 `Then the sprint should list the task "…"`.
 
 CI builds a real Leantime site with [DDEV](https://ddev.com) on the runner (Leantime's own image on the project's own
-MySQL, installed by its own installer, the accounts of the suite, the sample content), runs the whole suite against it
+MariaDB, installed by its own installer, the accounts of the suite, the sample content), runs the whole suite against it
 twice on every push and pull request, checks after each run that the site holds what it held before, then runs the
 assertions that must fail; see [The test site](#the-test-site) and [`.github/workflows/test.yml`](.github/workflows/test.yml).
 
@@ -56,12 +56,13 @@ Scenario: An account logs in through the form and out again
 ## From nothing to a green run
 
 What the machine needs: Docker, [DDEV](https://ddev.com), git, python3, Node.js 24 or later with npm, and about 1.5 GB
-of free memory for Leantime and MySQL. Leantime runs in DDEV's containers.
+of free memory for Leantime and MariaDB. Leantime runs in DDEV's containers.
 
 **1. The site.** The pack's own build script (the one CI runs) makes the site in a DDEV project: Leantime's own image
-(`leantime/leantime:3.17.0`, `RELEASE` for another release) on MySQL 8.4, installed by Leantime's own installer, the
+(`leantime/leantime:3.17.0`, `RELEASE` for another release) on MariaDB 11.4, installed by Leantime's own installer, the
 five accounts of [Test users](#test-users), and the sample content (see [The test site](#the-test-site)). It takes a
-minute or two once the images are pulled (Leantime's is a download of about 320 MB).
+minute or two once the images are pulled (Leantime's is a download of about 320 MB). Leantime supports MySQL 8.0+ or
+MariaDB 10.6+; the test site runs MariaDB, as the Webship Workspace builds Leantime.
 
 ```bash
 git clone https://github.com/webship/leantime-steps.git
