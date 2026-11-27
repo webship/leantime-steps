@@ -1,6 +1,6 @@
 {
   "name": "@webship-js/leantime-steps",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Cucumber step definitions for Leantime, the open-source project management software, a pack for webship-js (Playwright and Cucumber): logging in and out and its refusals, a project and who may open it, the task list, one task (its status, its comments, its assignee, the time logged on it, who made it), a new task, what a Commenter and a Read Only person may not do, and the sprints with their tasks. Test content is made and removed through the site's own API, so a run leaves the site as it found it.",
   "main": "tests/step-definitions/leantime-helpers.js",
   "files": [
